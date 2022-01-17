@@ -1,73 +1,26 @@
 <script>
-import { reactive } from "vue";
+import { computed, reactive } from "vue";
+import data from "../assets/store.json";
 export default {
   props: {
     msg: String,
+    resize: Boolean,
   },
   setup(props) {
     const state = reactive({
-      areas: [
-        {
-          id: 0,
-          name: "area1",
-        },
-        {
-          id: 1,
-          name: "area2",
-        },
-      ],
-      emps: [
-        { id: 1, name: "emp1" },
-        { id: 2, name: "emp2" },
-      ],
-      shifts: [
-        {
-          id: 0,
-          name: "shift1",
-          emp: "emp0",
-          area: 0,
-          content: "one shift",
-          x: 0,
-          y: 0,
-          w: 5,
-        },
-        {
-          id: 1,
-          name: "shift2",
-          emp: "emp0",
-          area: 1,
-          content: "another shift",
-          x: 1,
-          y: 1,
-          w: 5,
-        },
-        {
-          id: 2,
-          name: "shift3",
-          emp: "emp0",
-          area: 0,
-          content: "3rd shift",
-          x: 1,
-          y: 1,
-          w: 4,
-          locked: "yes",
-        },
-      ],
-      blankShift: {
-        id: 0,
-        name: "new shift",
-        emp: "",
-        area: null,
-        content: "",
-        x: 0,
-        y: 0,
-        w: 5,
-      },
+      ...data,
+      dragging: false,
     });
+    const areaRow = (areaId) => {
+      return state.shifts.filter((x) => x.area == areaId).length;
+    };
+    const areaHeight = (r) => {
+      return state.rowHeight * (areaRow(r) + 1) + "px";
+    };
     const empDragStart = (event, emp) => {
       // console.log("empDragStart", emp);
       event.dataTransfer.dropEffect = "copy";
-      event.dataTransfer.setData("emp", emp.id);
+      event.dataTransfer.setData("emp", emp.name);
     };
     const shiftDragStart = (event, shift) => {
       // console.log("shiftDragStart", shift);
@@ -75,6 +28,10 @@ export default {
       event.dataTransfer.setData("shift", shift.id);
     };
     const onDrop = (event, areaId) => {
+      if (state.dragging) {
+        state.dragging = false;
+        return false;
+      }
       if (event.dataTransfer.getData("shift")) {
         // console.log("shift", event.dataTransfer);
         const shiftId = event.dataTransfer.getData("shift");
@@ -85,9 +42,11 @@ export default {
         newShift.area = areaId;
         newShift.id = state.shifts.length;
         state.shifts.push({ ...newShift });
+        state.areas.find((x) => x.id == areaId).row++;
       } else return;
     };
     const onDropShift = (event, item) => {
+      state.dragging = true;
       const shiftId = event.dataTransfer.getData("shift");
       console.log(shiftId, "onDropShift swap to", item.id);
     };
@@ -103,6 +62,8 @@ export default {
       empDragStart,
       shiftDragStart,
       onDropShift,
+      areaRow,
+      areaHeight,
     };
   },
 };
@@ -126,19 +87,29 @@ export default {
       <div
         v-for="area in state.areas"
         :key="area.id"
-        class="roster"
+        class="roster co-dragger"
+        :cod-row="area.row"
         @dragenter.prevent
         @dragover.prevent
         @drop="onDrop($event, area.id)"
+        :style="{ height: areaHeight(area.id) }"
       >
         <div
           v-for="item in state.shifts.filter((x) => x.area == area.id)"
           :key="item.id"
           class="shift-item"
+          :cod-x="item.x"
+          :cod-y="item.y"
+          :cod-h="item.h"
+          :cod-w="item.w"
           draggable="true"
           @dragstart="shiftDragStart($event, item)"
           @drop="onDropShift($event, item)"
+          @dragenter.prevent
+          @dragover.prevent
         >
+          <div v-if="resize" class="resize-handle-left"></div>
+          <div v-if="resize" class="resize-handle-right"></div>
           {{ item.id }} - {{ item.emp }}
         </div>
       </div>
@@ -155,6 +126,9 @@ export default {
 }
 .shift-item {
   background: moccasin;
+  position: relative;
+  height: 70px;
+  resize: horizontal;
 }
 .emp-item {
   background: paleturquoise;
@@ -162,7 +136,6 @@ export default {
 .emp,
 .roster {
   border: 1px solid #ccc;
-  min-height: 250px;
 }
 a {
   color: #42b983;
@@ -170,5 +143,19 @@ a {
 .flex {
   display: flex;
   height: 500px;
+}
+.resize-handle-left {
+  left: 5px;
+}
+.resize-handle-right {
+  right: 5px;
+}
+.resize-handle-left,
+.resize-handle-right {
+  position: absolute;
+  background-color: #42b983;
+  height: 50px;
+  width: 5px;
+  top: 5px;
 }
 </style>

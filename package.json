@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "prettier": "^2.5.1",
+    "sass": "^1.48.0",
     "vue": "^3.2.25"
   },
   "devDependencies": {
