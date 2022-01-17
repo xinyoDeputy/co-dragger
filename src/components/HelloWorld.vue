@@ -12,6 +12,7 @@ export default {
       ...data,
       dragging: false,
       draggingX: 0,
+      resizeHover: false,
     });
     onMounted(() => {
       state.rosterWidth = rosterRef.value.offsetWidth;
@@ -146,8 +147,10 @@ export default {
             @dragover.prevent
             :style="{ top: shiftTop(index) }"
           >
-            <!-- <div v-if="resize" class="resize-handle-left"></div> -->
-            <!-- <div v-if="resize" class="resize-handle-right"></div> -->
+            <div v-if="resize">
+              <div class="resize-handle-left"></div>
+              <div class="resize-handle-right"></div>
+            </div>
             shift {{ item.id }} - {{ item.emp }} - start at {{ item.x }}
           </div>
         </div>
@@ -168,6 +171,7 @@ export default {
   position: relative;
   height: 70px;
   resize: horizontal;
+  overflow: auto;
   transition: left 200ms, top 400ms;
 }
 .shift-item:focus {

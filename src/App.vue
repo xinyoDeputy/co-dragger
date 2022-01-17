@@ -5,7 +5,7 @@ import HelloWorld from "./components/HelloWorld.vue";
 </script>
 
 <template>
-  <HelloWorld msg="drag and drop" resize />
+  <HelloWorld msg="Vite drag and drop" resize />
 </template>
 
 <style lang="scss">
