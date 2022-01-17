@@ -1,0 +1,63 @@
+{
+  "areas": [
+    {
+      "id": 0,
+      "name": "area1"
+    },
+    {
+      "id": 1,
+      "name": "area2"
+    }
+  ],
+  "emps": [
+    { "id": 1, "name": "emp1" },
+    { "id": 2, "name": "emp2" }
+  ],
+  "shifts": [
+    {
+      "id": 0,
+      "name": "shift1",
+      "emp": "emp0",
+      "area": 0,
+      "content": "one shift",
+      "x": 0,
+      "y": 0,
+      "w": 5,
+      "h": 1
+    },
+    {
+      "id": 1,
+      "name": "shift2",
+      "emp": "emp0",
+      "area": 1,
+      "content": "another shift",
+      "x": 1,
+      "y": 1,
+      "w": 5,
+      "h": 1
+    },
+    {
+      "id": 2,
+      "name": "shift3",
+      "emp": "emp0",
+      "area": 0,
+      "content": "3rd shift",
+      "x": 1,
+      "y": 1,
+      "w": 4,
+      "h": 1
+    }
+  ],
+  "blankShift": {
+    "id": 0,
+    "name": "new shift",
+    "emp": "",
+    "area": null,
+    "content": "",
+    "x": 0,
+    "y": 0,
+    "w": 5,
+    "h": 1
+  },
+  "rowHeight": 70
+}
