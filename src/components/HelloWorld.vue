@@ -16,7 +16,7 @@ export default {
       resizeStartX: null,
       resizeShiftX: null,
       resizeShiftW: null,
-      resizingShift: null,
+      resizeShift: null,
       resizeDirection: null,
       dragging: false,
       resizing: false,
@@ -104,9 +104,9 @@ export default {
       // shift.w = 8;
       state.resizeDirection = direction;
       state.resizeStartX = event.clientX; // init start x
-      state.resizingShift = state.shifts.find((x) => x.id == shiftId);
-      state.resizeShiftX = state.resizingShift.x;
-      state.resizeShiftW = state.resizingShift.w;
+      state.resizeShift = state.shifts.find((x) => x.id == shiftId);
+      state.resizeShiftX = state.resizeShift.x;
+      state.resizeShiftW = state.resizeShift.w;
       window.addEventListener("mousemove", onResize);
       window.addEventListener("mouseup", resizeStop);
     };
@@ -115,16 +115,16 @@ export default {
       if (state.resizing) {
         switch (state.resizeDirection) {
           case "w": {
-            state.resizingShift.w =
+            state.resizeShift.w =
               state.resizeShiftW -
               parseInt((event.clientX - state.resizeStartX) / cell.value);
-            state.resizingShift.x =
+            state.resizeShift.x =
               state.resizeShiftX +
               parseInt((event.clientX - state.resizeStartX) / cell.value);
             break;
           }
           case "e": {
-            state.resizingShift.w =
+            state.resizeShift.w =
               state.resizeShiftW +
               parseInt((event.clientX - state.resizeStartX) / cell.value);
             break;
@@ -143,9 +143,10 @@ export default {
       event.preventDefault();
       if (state.resizing) {
         state.resizing = false;
-        // state.resizeStartX = null;
-        // state.resizeShiftW = null;
-        // state.resizingShift = null;
+        state.resizeStartX = null;
+        state.resizeShiftX = null;
+        state.resizeShiftW = null;
+        state.resizeShift = null;
         window.removeEventListener("mousemove", onResize);
         console.log("stop");
       }
@@ -196,7 +197,10 @@ export default {
           @dragenter="onDragEnter($event, area.id)"
           @dragover="onDragOver($event)"
           @drop="onDrop($event, area.id)"
-          :style="{ height: areaHeight(area.id) }"
+          :style="{
+            height: areaHeight(area.id),
+            cursor: state.resizing ? 'ew-resize' : 'inherit',
+          }"
         >
           <div
             v-for="(shift, index) in areaShiftSort(area.id)"
@@ -231,12 +235,13 @@ export default {
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .emp {
   width: 200px;
 }
 .roster-board {
   flex-grow: 1;
+  overflow: hidden;
 }
 .shift-item {
   background-color: moccasin;
@@ -246,8 +251,12 @@ export default {
   overflow: visible;
   transition: left 200ms, top 400ms;
 }
+.shift-item:hover,
 .shift-item:focus {
-  background: #42b983;
+  .resize-handle-left,
+  .resize-handle-right {
+    display: block;
+  }
 }
 .emp-item {
   background: paleturquoise;
@@ -262,15 +271,22 @@ a {
 }
 .flex {
   display: flex;
-  height: 500px;
 }
 .resize-handle-left {
   left: -10px;
   cursor: ew-resize;
+  display: none;
+  &:focus {
+    display: block;
+  }
 }
 .resize-handle-right {
   right: -10px;
   cursor: ew-resize;
+  display: none;
+  &:focus {
+    display: block;
+  }
 }
 .resize-handle-left,
 .resize-handle-right {
