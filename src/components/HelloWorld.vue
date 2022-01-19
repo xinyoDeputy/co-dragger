@@ -8,9 +8,16 @@ export default {
   },
   setup() {
     const rosterRef = ref(null);
+    const cell = computed(() => {
+      return state.rosterWidth / 12;
+    });
     const state = reactive({
       ...data,
+      resizeStartX: null,
+      resizeStartW: null,
+      resizingShift: null,
       dragging: false,
+      resizing: false,
       draggingX: 0,
       resizeHover: false,
     });
@@ -56,8 +63,7 @@ export default {
         let target = state.shifts.find((x) => x.id == shiftId);
         target.area = areaId;
         if (state.draggingX) {
-          let c = state.rosterWidth / 12;
-          target.x = parseInt(state.draggingX / c);
+          target.x = parseInt(state.draggingX / cell);
           state.draggingX = 0;
         }
       } else if (event.dataTransfer.getData("emp")) {
@@ -66,8 +72,7 @@ export default {
         newShift.area = areaId;
         newShift.id = state.shifts.length;
         if (state.draggingX) {
-          let c = state.rosterWidth / 12;
-          newShift.x = parseInt(state.draggingX / c);
+          newShift.x = parseInt(state.draggingX / cell);
           state.draggingX = 0;
         }
         state.shifts.push({ ...newShift });
@@ -89,8 +94,51 @@ export default {
       event.preventDefault();
       state.draggingX = event.offsetX;
     };
+    const resizeStart = (event, direction, shiftId) => {
+      event.preventDefault();
+      state.resizing = true;
+      console.log("start");
+      // let shift = state.shifts.find((x) => x.id == shiftId);
+      // shift.w = 8;
+      state.resizeStartX = event.clientX; // init start x
+      state.resizingShift = state.shifts.find((x) => x.id == shiftId);
+      state.resizeStartW = state.resizingShift.w;
+      window.addEventListener("mousemove", onResize);
+      window.addEventListener("mouseup", resizeStop);
+    };
+    const onResize = (event) => {
+      if (state.resizing) {
+        state.resizingShift.w =
+          state.resizeStartW +
+          parseInt((event.clientX - state.resizeStartX) / cell.value);
+        console.log(
+          "shift.w =",
+          state.resizingShift.w,
+          "mouse x -",
+          event.clientX,
+          "init x",
+          state.resizeStartX,
+          " / cell",
+          cell.value
+        );
+      }
+      console.log(event.clientX);
+    };
+    const resizeStop = (event) => {
+      event.preventDefault();
+      if (state.resizing) {
+        state.resizing = false;
+        state.resizeStartX = null;
+        state.resizeStartW = null;
+        state.resizingShift = null;
+        window.removeEventListener("mousemove", onResize);
+        console.log("stop");
+      }
+    };
+
     return {
       state,
+      cell,
       rosterRef,
       areaShiftSort,
       onDrop,
@@ -102,6 +150,9 @@ export default {
       areaRow,
       areaHeight,
       shiftTop,
+      resizeStart,
+      onResize,
+      resizeStop,
     };
   },
 };
@@ -133,25 +184,31 @@ export default {
           :style="{ height: areaHeight(area.id) }"
         >
           <div
-            v-for="(item, index) in areaShiftSort(area.id)"
-            :key="item.id"
+            v-for="(shift, index) in areaShiftSort(area.id)"
+            :key="shift.id"
             class="shift-item co-dragger-item"
-            :cod-x="item.x"
-            :cod-y="item.y"
-            :cod-h="item.h"
-            :cod-w="item.w"
+            :cod-x="shift.x"
+            :cod-y="shift.y"
+            :cod-h="shift.h"
+            :cod-w="shift.w"
             draggable="true"
-            @dragstart="shiftDragStart($event, item)"
-            @drop="onDropShift($event, item)"
+            @dragstart="shiftDragStart($event, shift)"
+            @drop="onDropShift($event, shift)"
             @dragenter.prevent
             @dragover.prevent
             :style="{ top: shiftTop(index) }"
           >
             <div v-if="resize">
-              <div class="resize-handle-left"></div>
-              <div class="resize-handle-right"></div>
+              <div
+                class="resize-handle-left"
+                @mousedown="resizeStart($event, w, shift.id)"
+              ></div>
+              <div
+                class="resize-handle-right"
+                @mousedown="resizeStart($event, e, shift.id)"
+              ></div>
             </div>
-            shift {{ item.id }} - {{ item.emp }} - start at {{ item.x }}
+            shift {{ shift.id }} - {{ shift.emp }} - start at {{ shift.x }}
           </div>
         </div>
       </div>
@@ -171,7 +228,7 @@ export default {
   position: relative;
   height: 70px;
   resize: horizontal;
-  overflow: auto;
+  overflow: visible;
   transition: left 200ms, top 400ms;
 }
 .shift-item:focus {
@@ -193,17 +250,17 @@ a {
   height: 500px;
 }
 .resize-handle-left {
-  left: 5px;
+  left: -10px;
 }
 .resize-handle-right {
-  right: 5px;
+  right: -10px;
 }
 .resize-handle-left,
 .resize-handle-right {
   position: absolute;
   background-color: #42b983;
-  height: 50px;
-  width: 5px;
-  top: 5px;
+  height: 70px;
+  width: 15px;
+  top: 0;
 }
 </style>
