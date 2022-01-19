@@ -14,8 +14,10 @@ export default {
     const state = reactive({
       ...data,
       resizeStartX: null,
-      resizeStartW: null,
+      resizeShiftX: null,
+      resizeShiftW: null,
       resizingShift: null,
+      resizeDirection: null,
       dragging: false,
       resizing: false,
       draggingX: 0,
@@ -100,18 +102,40 @@ export default {
       console.log("start");
       // let shift = state.shifts.find((x) => x.id == shiftId);
       // shift.w = 8;
+      state.resizeDirection = direction;
       state.resizeStartX = event.clientX; // init start x
       state.resizingShift = state.shifts.find((x) => x.id == shiftId);
-      state.resizeStartW = state.resizingShift.w;
+      state.resizeShiftX = state.resizingShift.x;
+      state.resizeShiftW = state.resizingShift.w;
       window.addEventListener("mousemove", onResize);
       window.addEventListener("mouseup", resizeStop);
     };
     const onResize = (event) => {
-      console.log("on resize");
+      console.log("on resize", event, state.resizeDirection);
       if (state.resizing) {
-        state.resizingShift.w =
-          state.resizeStartW +
-          parseInt((event.clientX - state.resizeStartX) / cell.value);
+        switch (state.resizeDirection) {
+          case "w": {
+            state.resizingShift.w =
+              state.resizeShiftW -
+              parseInt((event.clientX - state.resizeStartX) / cell.value);
+            state.resizingShift.x =
+              state.resizeShiftX +
+              parseInt((event.clientX - state.resizeStartX) / cell.value);
+            break;
+          }
+          case "e": {
+            state.resizingShift.w =
+              state.resizeShiftW +
+              parseInt((event.clientX - state.resizeStartX) / cell.value);
+            break;
+          }
+          case "n": {
+          }
+          case "s": {
+          }
+          default: {
+          }
+        }
       }
       console.log(event.clientX);
     };
@@ -120,7 +144,7 @@ export default {
       if (state.resizing) {
         state.resizing = false;
         // state.resizeStartX = null;
-        // state.resizeStartW = null;
+        // state.resizeShiftW = null;
         // state.resizingShift = null;
         window.removeEventListener("mousemove", onResize);
         console.log("stop");
@@ -192,11 +216,11 @@ export default {
             <div v-if="resize">
               <div
                 class="resize-handle-left"
-                @mousedown="resizeStart($event, w, shift.id)"
+                @mousedown="resizeStart($event, 'w', shift.id)"
               ></div>
               <div
                 class="resize-handle-right"
-                @mousedown="resizeStart($event, e, shift.id)"
+                @mousedown="resizeStart($event, 'e', shift.id)"
               ></div>
             </div>
             shift {{ shift.id }} - {{ shift.emp }} - start at {{ shift.x }}
@@ -242,9 +266,11 @@ a {
 }
 .resize-handle-left {
   left: -10px;
+  cursor: ew-resize;
 }
 .resize-handle-right {
   right: -10px;
+  cursor: ew-resize;
 }
 .resize-handle-left,
 .resize-handle-right {
