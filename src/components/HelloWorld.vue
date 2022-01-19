@@ -63,7 +63,7 @@ export default {
         let target = state.shifts.find((x) => x.id == shiftId);
         target.area = areaId;
         if (state.draggingX) {
-          target.x = parseInt(state.draggingX / cell);
+          target.x = parseInt(state.draggingX / cell.value);
           state.draggingX = 0;
         }
       } else if (event.dataTransfer.getData("emp")) {
@@ -72,7 +72,7 @@ export default {
         newShift.area = areaId;
         newShift.id = state.shifts.length;
         if (state.draggingX) {
-          newShift.x = parseInt(state.draggingX / cell);
+          newShift.x = parseInt(state.draggingX / cell.value);
           state.draggingX = 0;
         }
         state.shifts.push({ ...newShift });
@@ -107,20 +107,11 @@ export default {
       window.addEventListener("mouseup", resizeStop);
     };
     const onResize = (event) => {
+      console.log("on resize");
       if (state.resizing) {
         state.resizingShift.w =
           state.resizeStartW +
           parseInt((event.clientX - state.resizeStartX) / cell.value);
-        console.log(
-          "shift.w =",
-          state.resizingShift.w,
-          "mouse x -",
-          event.clientX,
-          "init x",
-          state.resizeStartX,
-          " / cell",
-          cell.value
-        );
       }
       console.log(event.clientX);
     };
@@ -128,9 +119,9 @@ export default {
       event.preventDefault();
       if (state.resizing) {
         state.resizing = false;
-        state.resizeStartX = null;
-        state.resizeStartW = null;
-        state.resizingShift = null;
+        // state.resizeStartX = null;
+        // state.resizeStartW = null;
+        // state.resizingShift = null;
         window.removeEventListener("mousemove", onResize);
         console.log("stop");
       }
