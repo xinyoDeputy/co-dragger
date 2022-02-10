@@ -9,7 +9,7 @@ export default {
   setup() {
     const rosterRef = ref(null);
     const cell = computed(() => {
-      return state.rosterWidth / 12;
+      return state.rosterWidth / 96;
     });
     const state = reactive({
       ...data,

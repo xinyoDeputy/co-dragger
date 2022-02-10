@@ -1,6 +1,6 @@
 @use "sass:math";
 
-$gridstack-columns: 12 !default;
+$gridstack-columns: 96 !default;
 $animation_speed: 0.3s !default;
 
 @mixin vendor($property, $value...) {
